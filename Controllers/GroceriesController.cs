@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace dev.groceries.lltm.local.Controllers
 {
@@ -22,34 +23,40 @@ namespace dev.groceries.lltm.local.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Item> Get()
+        public async Task<IEnumerable<Item>> Get()
         {
-            this._logger.LogInformation("Received GET");
-            return this.Groceries.itemCollection.ToArray();
+            return await Task.Run(() => {
+                this._logger.LogInformation("Received GET");
+                return this.Groceries.itemCollection.ToArray();
+            });
         }
 
         [HttpPost]
-        public Item Post(Item item)
+        public async Task<Item> Post(Item item)
         {
-            this._logger.LogInformation("Inserting a new grocery item");
-            this.Groceries.Add(item);
-            this.Groceries.SaveChanges();
+            return await Task.Run(() => {
+                this._logger.LogInformation("Inserting a new grocery item");
+                this.Groceries.Add(item);
+                this.Groceries.SaveChanges();
 
-            return item;
+                return item;
+            });
         }
 
         [HttpPut]
-        public Item Put(Item item)
+        async public Task<Item> Put(Item item)
         {
-            Console.WriteLine("Updating the given grocery item");
+            return await Task.Run(() => {
+                Console.WriteLine("Updating the given grocery item");
 
-            Item foundItem = this.Groceries.itemCollection.Where(t => t.Id == item.Id).ToList().First() as Item;
-            foundItem.Name = item.Name;
-            foundItem.Count = item.Count;
-            foundItem.Purchased = item.Purchased;
-            this.Groceries.SaveChanges();
+                Item foundItem = this.Groceries.itemCollection.Where(t => t.Id == item.Id).ToList().First() as Item;
+                foundItem.Name = item.Name;
+                foundItem.Count = item.Count;
+                foundItem.Purchased = item.Purchased;
+                this.Groceries.SaveChanges();
 
-            return foundItem;
+                return foundItem;
+            });
         }
 
         [HttpDelete]
@@ -75,13 +82,13 @@ namespace dev.groceries.lltm.local.Controllers
         }
 
         [HttpPatch]
-        public Item SetPurchased(Item item)
+        public async Task<Item> SetPurchased(Item item)
         {
             Console.WriteLine("Updating to set it purchased");
 
             item.Purchased = DateTime.Now;
 
-            return this.Put(item);
+            return await this.Put(item);
         }
 
     }
